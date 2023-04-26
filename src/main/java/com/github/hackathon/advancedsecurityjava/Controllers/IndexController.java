@@ -28,23 +28,23 @@ public class IndexController {
       @RequestParam(name = "read", required = false) Boolean bookread) {
     List<Book> books = new ArrayList<Book>();
 
-    Statement statement = null;
+    PreparedStatement statement = null;
+    List<String> parameters = new ArrayList<>();
 
     try {
       // Init connection to DB
       connection = DriverManager.getConnection(Application.connectionString);
 
-      statement = connection.createStatement();
       String query = null;
 
       if (bookname != null) {
         // Filter by book name
-         query = "SELECT * FROM Books WHERE name LIKE ?";
-         parameters.add("%" + bookname + "%");
+        query = "SELECT * FROM Books WHERE name LIKE ?";
+        parameters.add("%" + bookname + "%");
       } else if (bookauthor != null) {
         // Filter by book author
-         query = "SELECT * FROM Books WHERE author LIKE ?";
-         parameters.add("%" + bookauthor + "%");
+        query = "SELECT * FROM Books WHERE author LIKE ?";
+        parameters.add("%" + bookauthor + "%");
       } else if (bookread != null) {
         // Filter by if the book has been read or not
         Integer read = bookread ? 1 : 0;
@@ -54,7 +54,7 @@ public class IndexController {
         // All books
         query = "SELECT * FROM Books";
       }
-      
+
       statement = connection.prepareStatement(query);
       int index = 1;
       for (String parameter : parameters) {
@@ -62,7 +62,7 @@ public class IndexController {
         index += 1;
       }
 
-      ResultSet results = statement.executeQuery(query);
+      ResultSet results = statement.executeQuery();
 
       while (results.next()) {
         Book book = new Book(results.getString("name"), results.getString("author"), (results.getInt("read") == 1));
@@ -87,3 +87,4 @@ public class IndexController {
     return books;
   }
 }
+
